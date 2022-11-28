@@ -25,7 +25,11 @@ async function run() {
       .db("last-assignment")
       .collection("catagories");
     const itemscollection = client.db("last-assignment").collection("items");
-    ////////////////////////////////////////////
+    const bookingscollection = client
+      .db("last-assignment")
+      .collection("booking");
+
+    //////////////// items and collections////////////////////////////
     app.get("/items", async (req, res) => {
       const query = {};
       const result = await itemscollection.find(query).toArray();
@@ -41,6 +45,13 @@ async function run() {
       const id = req.params.id;
       const filter = { category_id: id };
       const result = await catagoriescollection.find(filter).toArray();
+      res.send(result);
+    });
+    ////////////////////bookings part//////////////////////////////
+    app.post("/booking", async (req, res) => {
+      const booking = req.body;
+      console.log(booking);
+      const result = await bookingscollection.insertOne(booking);
       res.send(result);
     });
   } finally {
