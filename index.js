@@ -64,6 +64,19 @@ async function run() {
       const result = await bookingscollection.insertOne(booking);
       res.send(result);
     });
+    ///////////////////////////////////////////////////
+    app.get("/booking", async (req, res) => {
+      const email = req.query.email;
+      // const decodedEmail = req.decoded.email;
+
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({ message: "forbidden access" });
+      // }
+
+      const query = { email: email };
+      const booking = await bookingscollection.find(query).toArray();
+      res.send(booking);
+    });
   } finally {
   }
 }
