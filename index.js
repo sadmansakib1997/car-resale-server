@@ -79,6 +79,21 @@ async function run() {
       res.send(booking);
     });
     ///////////////////////////users/////////////////////
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await userscollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "2hr",
+        });
+        return res.send({ accestoken: token });
+      }
+      console.log(user);
+      res.status(403).send({ accestoken: "" });
+    });
+
+    /////////////
     app.post("/users", async (req, res) => {
       const user = req.body;
 
