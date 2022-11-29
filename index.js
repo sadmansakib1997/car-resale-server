@@ -99,6 +99,12 @@ async function run() {
     });
     ///////////////////////////users/////////////////////
 
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const users = await userscollection.find(query).toArray();
+      res.send(users);
+    });
+    /////////////////
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -120,6 +126,8 @@ async function run() {
       console.log(result);
       res.send(result);
     });
+
+    /////////////////////////////////////////////////////////
   } finally {
   }
 }
