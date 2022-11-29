@@ -28,6 +28,7 @@ async function run() {
     const bookingscollection = client
       .db("last-assignment")
       .collection("booking");
+    const userscollection = client.db("last-assignment").collection("users");
 
     //////////////// items and collections////////////////////////////
     app.get("/items", async (req, res) => {
@@ -64,7 +65,7 @@ async function run() {
       const result = await bookingscollection.insertOne(booking);
       res.send(result);
     });
-    ///////////////////////////////////////////////////
+    //////////
     app.get("/booking", async (req, res) => {
       const email = req.query.email;
       // const decodedEmail = req.decoded.email;
@@ -76,6 +77,14 @@ async function run() {
       const query = { email: email };
       const booking = await bookingscollection.find(query).toArray();
       res.send(booking);
+    });
+    ///////////////////////////users/////////////////////
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+
+      const result = await userscollection.insertOne(user);
+      console.log(result);
+      res.send(result);
     });
   } finally {
   }
