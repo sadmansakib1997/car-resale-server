@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -49,6 +49,16 @@ async function run() {
       .collection("booking");
     const userscollection = client.db("last-assignment").collection("users");
 
+    ///////////////////////verifyadmin///////////////////////////////////////
+    const verifyAdmin = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await userscollection.findOne(query);
+      if (user.role !== "admin") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
     //////////////// items and collections////////////////////////////
     app.get("/items", async (req, res) => {
       const query = {};
@@ -126,6 +136,57 @@ async function run() {
       console.log(result);
       res.send(result);
     });
+    ///////admin//////
+    app.put("/users/admin/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      //veryfiadmin korci aikhane//
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userscollection.updateOne(
+        filter,
+        updatedoc,
+        options
+      );
+      res.send(result);
+    });
+    /////////////////////
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userscollection.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+    ////////////sellers///////////
+    // app.put("/users/seller/:id", verifyJWT, verifyAdmin, async (req, res) => {
+    //   //veryfiadmin korci aikhane//
+    //   const id = req.params.id;
+    //   const filter = { _id: ObjectId(id) };
+    //   const options = { upsert: true };
+    //   const updatedoc = {
+    //     $set: {
+    //       role: "seller",
+    //     },
+    //   };
+    //   const result = await userscollection.updateOne(
+    //     filter,
+    //     updatedoc,
+    //     options
+    //   );
+    //   res.send(result);
+    // });
+
+    // app.get("/users/seller/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const query = { email };
+    //   const user = await userscollection.findOne(query);
+    //   res.send({ isSeller: user?.role === "seller" });
+    // });
+    /////////////////////
 
     /////////////////////////////////////////////////////////
   } finally {
