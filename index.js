@@ -89,7 +89,7 @@ async function run() {
         .toArray();
       res.send(result);
     });
-    ////////////////////bookings part//////////////////////////////
+    ////////////////////bookings part//////////////////////////////////////////////////
     app.post("/booking", async (req, res) => {
       const booking = req.body;
       console.log(booking);
@@ -106,7 +106,7 @@ async function run() {
       const result = await bookingscollection.insertOne(booking);
       res.send(result);
     });
-    //////////
+    ///////////
     app.get("/booking", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
@@ -119,7 +119,14 @@ async function run() {
       const booking = await bookingscollection.find(query).toArray();
       res.send(booking);
     });
-    ///////////////////////////users/////////////////////
+    ////////////////payment///////
+    app.get("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookingscollection.findOne(query);
+      res.send(result);
+    });
+    ///////////////////////////users////////////////////////////////////////////////
 
     app.get("/users", async (req, res) => {
       const query = {};
