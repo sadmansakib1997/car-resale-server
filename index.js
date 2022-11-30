@@ -205,7 +205,7 @@ async function run() {
       const result = await userscollection.deleteOne(filter);
       res.send(result);
     });
-    ///////////////////products collections////////////////////////////
+    ///////////////////products collections here////////////////////////////
     app.post("/products", verifyJWT, async (req, res) => {
       const products = req.body;
       const result = await productscollection.insertOne(products);
