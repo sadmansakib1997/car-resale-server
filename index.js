@@ -48,6 +48,9 @@ async function run() {
       .db("last-assignment")
       .collection("booking");
     const userscollection = client.db("last-assignment").collection("users");
+    const productscollection = client
+      .db("last-assignment")
+      .collection("products");
 
     ///////////////////////verifyadmin///////////////////////////////////////
     const verifyAdmin = async (req, res, next) => {
@@ -75,6 +78,15 @@ async function run() {
       const id = req.params.id;
       const filter = { category_id: id };
       const result = await catagoriescollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.get("/product", async (req, res) => {
+      const query = {};
+      const result = await catagoriescollection
+        .find(query)
+        .project({ name: 1 })
+        .toArray();
       res.send(result);
     });
     ////////////////////bookings part//////////////////////////////
@@ -162,31 +174,59 @@ async function run() {
       res.send({ isAdmin: user?.role === "admin" });
     });
     ////////////sellers///////////
-    // app.put("/users/seller/:id", verifyJWT, verifyAdmin, async (req, res) => {
-    //   //veryfiadmin korci aikhane//
-    //   const id = req.params.id;
-    //   const filter = { _id: ObjectId(id) };
-    //   const options = { upsert: true };
-    //   const updatedoc = {
-    //     $set: {
-    //       role: "seller",
-    //     },
-    //   };
-    //   const result = await userscollection.updateOne(
-    //     filter,
-    //     updatedoc,
-    //     options
-    //   );
-    //   res.send(result);
-    // });
+    app.put("/users/seller/:id", verifyJWT, async (req, res) => {
+      //veryfiadmin korci aikhane//
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedoc = {
+        $set: {
+          role: "seller",
+        },
+      };
+      const result = await userscollection.updateOne(
+        filter,
+        updatedoc,
+        options
+      );
+      res.send(result);
+    });
 
-    // app.get("/users/seller/:email", async (req, res) => {
-    //   const email = req.params.email;
-    //   const query = { email };
-    //   const user = await userscollection.findOne(query);
-    //   res.send({ isSeller: user?.role === "seller" });
-    // });
-    /////////////////////
+    app.get("/users/seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userscollection.findOne(query);
+      res.send({ isSeller: user?.role === "seller" });
+    });
+
+    app.delete("/users/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await userscollection.deleteOne(filter);
+      res.send(result);
+    });
+    ///////////////////products collections////////////////////////////
+    app.post("/products", verifyJWT, async (req, res) => {
+      const products = req.body;
+      const result = await productscollection.insertOne(products);
+      res.send(result);
+    });
+    /////////////////
+    app.get("/products", verifyJWT, async (req, res) => {
+      const query = {};
+      const result = await productscollection.find(query).toArray();
+      res.send(result);
+      // const query = {};
+      // const result = await productscollection.find(query).toArray();
+      // res.send(result);
+    });
+    //////////////////////////
+    app.delete("/products/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await productscollection.deleteOne(filter);
+      res.send(result);
+    });
 
     /////////////////////////////////////////////////////////
   } finally {
