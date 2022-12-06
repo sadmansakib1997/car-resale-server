@@ -4,7 +4,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-// const stripe = require("stripe")(process.env.STRIKE_SECRET);
+const stripe = require("stripe")(process.env.STRIKE_SECRET);
 const port = process.env.PORT || 5000;
 
 ///////////////midleware///////////////////////
@@ -51,6 +51,9 @@ async function run() {
     const productscollection = client
       .db("last-assignment")
       .collection("products");
+    const paymentcollection = client
+      .db("last-assignment")
+      .collection("payment");
 
     ///////////////////////verifyadmin///////////////////////////////////////
     const verifyAdmin = async (req, res, next) => {
@@ -235,7 +238,72 @@ async function run() {
       res.send(result);
     });
 
-    /////////////////////////////////////////////////////////
+    //////////////////////////payment system///////////////////////////////
+    app.post("/create-payment-intent", async (req, res) => {
+      const booking = req.body;
+      const price = booking.price;
+      const amount = price * 100;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    /////////////////////////
+    app.post("/payment", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentcollection.insertOne(payment);
+      const id = payment.bookingId;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          paid: true,
+          transictionId: payment.transictionId,
+        },
+      };
+      const updatedresult = await bookingscollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+    /////////////////////
+    app.get("/addPrice", async (req, res) => {
+      const filter = {};
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          price: 99,
+        },
+      };
+      const result = await catagoriescollection.updateMany(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+
+    app.get("/bookingprice", async (req, res) => {
+      const filter = {};
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          price: 99,
+        },
+      };
+      const result = await bookingscollection.updateMany(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
+    ////////////////////////////////////////////////////
   } finally {
   }
 }
